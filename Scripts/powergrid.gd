@@ -4,6 +4,8 @@ extends Node2D
 var GRID_WIDTH = 16
 var GRID_HEIGHT = 12
 
+var energy = 4
+
 var sparkScene = load("res://Scenes/spark.tscn")
 var gridTileScene = load("res://Scenes/grid_tile.tscn")
 var grid #2D array of tiles represented by their type
@@ -36,6 +38,20 @@ func testNavigateHelper(x, y, entryDir):
 	#Make sure a tile object exists at (x, y)
 	if(tileObj == null):
 		return
+	
+	clearOverlay();
+	for x1 in range(GRID_WIDTH):
+		for y1 in range(GRID_HEIGHT):
+			var targetTile = getTileAt(x1,y1);
+			if(x1 == x and y1 == y):
+				pass
+			elif(max(abs(x1-x),abs(y1-y))>energy):
+				targetTile.find_node("DistanceSprite_Black").show();
+			elif(int(max(abs(x1-x),abs(y1-y)))%2==0):
+				targetTile.find_node("DistanceSprite_Green").show();
+			else:
+				targetTile.find_node("DistanceSprite_Blue").show();
+		
 	var exit1 = tileObj.getExit1()
 	var exit2 = tileObj.getExit2()
 	#Check if spark can enter the tile
@@ -91,6 +107,9 @@ func _input(event):
 			var mouseTileX = floor(mouseX / 32)
 			var mouseTileY = floor(mouseY / 32)
 			testNavigate(mouseTileX, mouseTileY)
+	if(event.type == InputEvent.KEY):
+		if(event.scancode==KEY_ESCAPE):
+			clearOverlay();
 
 #After the 2D array of numbers for the tiles is generated,
 #spawn the tile objects
@@ -120,3 +139,11 @@ func exitAsString(exit):
 		return "UP"
 	elif(exit == DOWN):
 		return "DOWN"
+		
+func clearOverlay():
+	for x1 in range(GRID_WIDTH):
+		for y1 in range(GRID_HEIGHT):
+			var targetTile = getTileAt(x1,y1);
+			targetTile.find_node("DistanceSprite_Black").hide();
+			targetTile.find_node("DistanceSprite_Green").hide();
+			targetTile.find_node("DistanceSprite_Blue").hide();

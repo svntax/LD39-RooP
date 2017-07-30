@@ -6,6 +6,7 @@
 
 config/amount = 16
 config/lifetime = 0.5
+config/process_mode = 1
 params/direction = 180.0
 params/spread = 40.0
 params/linear_velocity = 64.0
