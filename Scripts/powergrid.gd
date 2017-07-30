@@ -1,8 +1,8 @@
 
 extends Node2D
 
-var GRID_WIDTH = 48
-var GRID_HEIGHT = 25
+var GRID_WIDTH = 19
+var GRID_HEIGHT = 20
 
 var SWAP_ANIM_DURATION = 2;
 var swapping = false;
@@ -10,12 +10,14 @@ var tilesSwapped = false;
 var elapsedSwappingTime = 0.0;
 var swapBase = null;
 var swapTarget = null;
+var swapQueue = []
 
 var energy = 4
 var selectedTile = null
 
 var sparkScene = load("res://Scenes/spark.tscn")
 var gridTileScene = load("res://Scenes/grid_tile.tscn")
+var powerMeter
 var grid #2D array of tiles represented by their type
 var objectGrid #2D array of tile objects
 
@@ -26,6 +28,8 @@ var objectGrid #2D array of tile objects
 #3 = left-down corner
 #4 = up-left corner
 #5 = up-right corner
+#6 = central generator
+var CENTRAL_TILE = 6
 
 #The 4 exits possible for each tile
 var UP = 0
@@ -46,7 +50,6 @@ func testNavigateHelper(x, y, entryDir):
 	#Make sure a tile object exists at (x, y)
 	if(tileObj == null):
 		return
-
 	var exit1 = tileObj.getExit1()
 	var exit2 = tileObj.getExit2()
 	#Check if spark can enter the tile
@@ -71,12 +74,17 @@ func testNavigateHelper(x, y, entryDir):
 			testNavigateHelper(x + 1, y, LEFT)
 		elif(currentExit == DOWN):
 			testNavigateHelper(x, y + 1, UP)
+	elif(tileObj.getType() == CENTRAL_TILE):
+		var powerBar = powerMeter.find_node("PowerBar")
+		var currentEnergy = powerBar.get_val()
+		powerBar.set_val(currentEnergy + 5)
 	else:
 		#Spark fizzles out
 		pass
 
 func _ready():
 	randomize() #Change the seed for any random operations
+	powerMeter = find_node("PowerMeter")
 	#Create 2D array for grid
 	grid = []
 	objectGrid = []
@@ -84,6 +92,10 @@ func _ready():
 		grid.append([])
 		for y in range(GRID_HEIGHT):
 			grid[x].append(randi() % 6) #Random tiles for now
+	#Hard-coded central generator
+	for i in range(-1, 2, 1):
+		for j in range(-1, 2, 1):
+			grid[GRID_WIDTH / 2 + i][GRID_HEIGHT / 2 + j] = CENTRAL_TILE
 	#Create a 2D array for the actual tile objects
 	for x in range(GRID_WIDTH):
 		objectGrid.append([])
@@ -102,11 +114,13 @@ func _input(event):
 		if(event.button_index == BUTTON_LEFT && event.pressed):
 			#Left click is tile selection
 			if(isValidGridPos(mouseTileX, mouseTileY)):
-				selectTileAt(mouseTileX, mouseTileY)
+				if(getTileAt(mouseTileX, mouseTileY).getType() != CENTRAL_TILE):
+					selectTileAt(mouseTileX, mouseTileY)
 		elif(event.button_index == BUTTON_RIGHT && event.pressed):
 			#Test - right click on a tile, then sparks will form on the path
 			#starting from the left side of the clicked tile
-			testNavigate(mouseTileX, mouseTileY)
+			if(getTileAt(mouseTileX, mouseTileY).getType() != CENTRAL_TILE):
+				testNavigate(mouseTileX, mouseTileY)
 	if(event.type == InputEvent.KEY):
 		if(event.scancode==KEY_ESCAPE):
 			clearOverlay();
@@ -156,6 +170,9 @@ func exitAsString(exit):
 
 #Selects a tile at the given valid position
 func selectTileAt(x, y):
+	#Do nothing if trying to select central generator
+	#if(getTileAt(x, y).getType() == CENTRAL_TILE):
+		#return
 	#If no selected tile, select the clicked tile
 	if(selectedTile == null):
 		selectedTile = getTileAt(x, y)
@@ -201,6 +218,8 @@ func beginSwap(tileA, tileB):
 	elapsedSwappingTime = 0.0;
 	swapBase = tileA;
 	swapTarget = tileB;
+	swapQueue.push_back(tileA)
+	swapQueue.push_back(tileB)
 
 # Handles swapping once it has been initiated by beginSwapping.
 # Delegates to swapTiles and updateSwapColors

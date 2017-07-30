@@ -8,6 +8,7 @@ extends Node2D
 #3 = left-down corner
 #4 = up-left corner
 #5 = up-right corner
+#6 = central generator
 
 #The points where a spark can enter or exit from
 var UP = 0
@@ -37,8 +38,11 @@ func setType(type):
 	self.type = type
 	var tileSprite = self.find_node("Sprite")
 	#First 6 basic tiles are in the first row of the tileset
-	if(type >= 0 or type <= 5):
+	if(type >= 0 and type <= 5):
 		tileSprite.set_region_rect(Rect2(type*16, 0, 16, 16))
+	elif(type == 6): #central tile
+		print("central tile")
+		tileSprite.set_region_rect(Rect2(0, 16, 16, 16))
 	if(type == 0): #left-right horizontal tile
 		exit1 = LEFT
 		exit2 = RIGHT
