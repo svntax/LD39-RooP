@@ -1,0 +1,9 @@
+[gd_scene format=1]
+
+[node name="PowerMeter" type="Node2D"]
+
+[node name="MeterSprite" type="Sprite" parent="."]
+
+region = true
+
+

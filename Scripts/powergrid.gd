@@ -5,6 +5,7 @@ var GRID_WIDTH = 16
 var GRID_HEIGHT = 12
 
 var energy = 4
+var selectedTile = null
 
 var sparkScene = load("res://Scenes/spark.tscn")
 var gridTileScene = load("res://Scenes/grid_tile.tscn")
@@ -38,20 +39,7 @@ func testNavigateHelper(x, y, entryDir):
 	#Make sure a tile object exists at (x, y)
 	if(tileObj == null):
 		return
-	
-	clearOverlay();
-	for x1 in range(GRID_WIDTH):
-		for y1 in range(GRID_HEIGHT):
-			var targetTile = getTileAt(x1,y1);
-			if(x1 == x and y1 == y):
-				pass
-			elif(max(abs(x1-x),abs(y1-y))>energy):
-				targetTile.find_node("DistanceSprite_Black").show();
-			elif(int(max(abs(x1-x),abs(y1-y)))%2==0):
-				targetTile.find_node("DistanceSprite_Green").show();
-			else:
-				targetTile.find_node("DistanceSprite_Blue").show();
-		
+
 	var exit1 = tileObj.getExit1()
 	var exit2 = tileObj.getExit2()
 	#Check if spark can enter the tile
@@ -99,13 +87,17 @@ func _ready():
 
 func _input(event):
 	if(event.type == InputEvent.MOUSE_BUTTON):
+		var mouseX = event.pos.x
+		var mouseY = event.pos.y
+		var mouseTileX = floor(mouseX / 32)
+		var mouseTileY = floor(mouseY / 32)
 		if(event.button_index == BUTTON_LEFT && event.pressed):
-			#Test - click on a tile, then sparks will form on the path
+			#Left click is tile selection
+			if(isValidGridPos(mouseTileX, mouseTileY)):
+				selectTileAt(mouseTileX, mouseTileY)
+		elif(event.button_index == BUTTON_RIGHT && event.pressed):
+			#Test - right click on a tile, then sparks will form on the path
 			#starting from the left side of the clicked tile
-			var mouseX = event.pos.x
-			var mouseY = event.pos.y
-			var mouseTileX = floor(mouseX / 32)
-			var mouseTileY = floor(mouseY / 32)
 			testNavigate(mouseTileX, mouseTileY)
 	if(event.type == InputEvent.KEY):
 		if(event.scancode==KEY_ESCAPE):
@@ -119,15 +111,48 @@ func createTilesFromGrid(grid):
 			var tileType = grid[x][y]
 			var tileObj = gridTileScene.instance()
 			tileObj.set_pos(Vector2(x*16, y*16))
+			tileObj.setPosInGrid(Vector2(x, y))
 			tileObj.setType(tileType)
 			self.add_child(tileObj)
 			objectGrid[x][y] = tileObj
 
+#Returns the tile type at (x, y) or -1 if invalid position
 func getTileTypeAt(x, y):
-	return grid[x][y]
+	if(isValidGridPos(x, y)):
+		return grid[x][y]
+	else:
+		return -1
 
+#Returns the tile object at (x, y) or null if invalid position
 func getTileAt(x, y):
-	return objectGrid[x][y]
+	if(isValidGridPos(x, y)):
+		return objectGrid[x][y]
+	else:
+		return null
+
+#Checks if the given position is within the bounds of the grid
+func isValidGridPos(x, y):
+	return (x >= 0 and x < GRID_WIDTH and y >= 0 and y < GRID_HEIGHT)
+
+#Swap two tiles' positions
+#Both tiles should not be null
+func swapTiles(tileA, tileB):
+	var posA = tileA.getPosInGrid()
+	var posB = tileB.getPosInGrid()
+	#Swap the types in the grid
+	var tempA = grid[posA.x][posA.y]
+	grid[posA.x][posA.y] = grid[posB.x][posB.y]
+	grid[posB.x][posB.y] = tempA
+	#Swap the object references
+	var tempObjA = tileA
+	objectGrid[posA.x][posA.y] = tileB
+	objectGrid[posB.x][posB.y] = tileA
+	#Swap the actual positions of the tiles
+	var tempPosA = Vector2(posA.x, posA.y)
+	tileA.setPosInGrid(posB)
+	tileA.set_pos(Vector2(posB.x*16, posB.y*16))
+	tileB.setPosInGrid(tempPosA)
+	tileB.set_pos(Vector2(tempPosA.x*16, tempPosA.y*16))
 
 #Debug function - used to print an exit direction as a string
 func exitAsString(exit):
@@ -139,7 +164,23 @@ func exitAsString(exit):
 		return "UP"
 	elif(exit == DOWN):
 		return "DOWN"
-		
+
+#Selects a tile at the given valid position
+func selectTileAt(x, y):
+	#If no selected tile, select the clicked tile
+	if(selectedTile == null):
+		selectedTile = getTileAt(x, y)
+		showOverlayAt(x, y)
+	else:
+		var clickedTile = getTileAt(x, y)
+		#If clicked on the same tile, de-select it
+		if(selectedTile == clickedTile):
+			selectedTile = null
+		else:
+			swapTiles(clickedTile, selectedTile)
+			selectedTile = null
+		clearOverlay()
+
 func clearOverlay():
 	for x1 in range(GRID_WIDTH):
 		for y1 in range(GRID_HEIGHT):
@@ -147,3 +188,17 @@ func clearOverlay():
 			targetTile.find_node("DistanceSprite_Black").hide();
 			targetTile.find_node("DistanceSprite_Green").hide();
 			targetTile.find_node("DistanceSprite_Blue").hide();
+
+func showOverlayAt(x, y):
+	clearOverlay();
+	for x1 in range(GRID_WIDTH):
+		for y1 in range(GRID_HEIGHT):
+			var targetTile = getTileAt(x1,y1);
+			if(x1 == x and y1 == y):
+				pass
+			elif(max(abs(x1-x),abs(y1-y))>energy):
+				targetTile.find_node("DistanceSprite_Black").show();
+			elif(int(max(abs(x1-x),abs(y1-y)))%2==0):
+				targetTile.find_node("DistanceSprite_Green").show();
+			else:
+				targetTile.find_node("DistanceSprite_Blue").show();

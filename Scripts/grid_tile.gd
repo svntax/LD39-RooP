@@ -16,12 +16,19 @@ var RIGHT = 2
 var DOWN = 3
 
 var type
+var gridPos
 var exit1
 var exit2
 var sparkInTile #If there is currently a spark in this tile
 
 func _ready():
 	sparkInTile = false
+
+func getPosInGrid():
+	return gridPos
+
+func setPosInGrid(newPos):
+	gridPos = newPos
 
 func getType():
 	return type
