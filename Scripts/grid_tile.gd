@@ -41,7 +41,6 @@ func setType(type):
 	if(type >= 0 and type <= 5):
 		tileSprite.set_region_rect(Rect2(type*16, 0, 16, 16))
 	elif(type == 6): #central tile
-		print("central tile")
 		tileSprite.set_region_rect(Rect2(0, 16, 16, 16))
 	if(type == 0): #left-right horizontal tile
 		exit1 = LEFT
