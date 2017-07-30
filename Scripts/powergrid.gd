@@ -1,8 +1,15 @@
 
 extends Node2D
 
-var GRID_WIDTH = 16
-var GRID_HEIGHT = 12
+var GRID_WIDTH = 48
+var GRID_HEIGHT = 25
+
+var SWAP_ANIM_DURATION = 2;
+var swapping = false;
+var tilesSwapped = false;
+var elapsedSwappingTime = 0.0;
+var swapBase = null;
+var swapTarget = null;
 
 var energy = 4
 var selectedTile = null
@@ -84,6 +91,7 @@ func _ready():
 			objectGrid[x].append(null)
 	createTilesFromGrid(grid)
 	set_process_input(true)
+	set_process(true);
 
 func _input(event):
 	if(event.type == InputEvent.MOUSE_BUTTON):
@@ -134,25 +142,6 @@ func getTileAt(x, y):
 func isValidGridPos(x, y):
 	return (x >= 0 and x < GRID_WIDTH and y >= 0 and y < GRID_HEIGHT)
 
-#Swap two tiles' positions
-#Both tiles should not be null
-func swapTiles(tileA, tileB):
-	var posA = tileA.getPosInGrid()
-	var posB = tileB.getPosInGrid()
-	#Swap the types in the grid
-	var tempA = grid[posA.x][posA.y]
-	grid[posA.x][posA.y] = grid[posB.x][posB.y]
-	grid[posB.x][posB.y] = tempA
-	#Swap the object references
-	var tempObjA = tileA
-	objectGrid[posA.x][posA.y] = tileB
-	objectGrid[posB.x][posB.y] = tileA
-	#Swap the actual positions of the tiles
-	var tempPosA = Vector2(posA.x, posA.y)
-	tileA.setPosInGrid(posB)
-	tileA.set_pos(Vector2(posB.x*16, posB.y*16))
-	tileB.setPosInGrid(tempPosA)
-	tileB.set_pos(Vector2(tempPosA.x*16, tempPosA.y*16))
 
 #Debug function - used to print an exit direction as a string
 func exitAsString(exit):
@@ -177,7 +166,7 @@ func selectTileAt(x, y):
 		if(selectedTile == clickedTile):
 			selectedTile = null
 		else:
-			swapTiles(clickedTile, selectedTile)
+			beginSwap(clickedTile, selectedTile)
 			selectedTile = null
 		clearOverlay()
 
@@ -202,3 +191,61 @@ func showOverlayAt(x, y):
 				targetTile.find_node("DistanceSprite_Green").show();
 			else:
 				targetTile.find_node("DistanceSprite_Blue").show();
+				
+func _process(delta):
+	handleSwapping(delta);
+	
+# The first function in the swap operation. Kicks off the process.
+func beginSwap(tileA, tileB):
+	swapping = true;
+	elapsedSwappingTime = 0.0;
+	swapBase = tileA;
+	swapTarget = tileB;
+
+# Handles swapping once it has been initiated by beginSwapping.
+# Delegates to swapTiles and updateSwapColors
+func handleSwapping(delta):
+	if(swapping):
+		elapsedSwappingTime+=delta;
+		if(elapsedSwappingTime>=SWAP_ANIM_DURATION/2 and !tilesSwapped):
+			swapTiles(swapBase, swapTarget);
+			tilesSwapped = true;
+		if(elapsedSwappingTime>=SWAP_ANIM_DURATION):
+			swapping = false;
+			elapsedSwappingTime = 0.0;
+			tilesSwapped=false;
+		updateSwapColors();
+		
+#Swap two tiles' positions
+#Both tiles should not be null
+# This gets called HALFWAY through the swap process.
+func swapTiles(tileA, tileB):
+	var posA = tileA.getPosInGrid()
+	var posB = tileB.getPosInGrid()
+	#Swap the types in the grid
+	var tempA = grid[posA.x][posA.y]
+	grid[posA.x][posA.y] = grid[posB.x][posB.y]
+	grid[posB.x][posB.y] = tempA
+	#Swap the object references
+	var tempObjA = tileA
+	objectGrid[posA.x][posA.y] = tileB
+	objectGrid[posB.x][posB.y] = tileA
+	#Swap the actual positions of the tiles
+	var tempPosA = Vector2(posA.x, posA.y)
+	tileA.setPosInGrid(posB)
+	tileA.set_pos(Vector2(posB.x*16, posB.y*16))
+	tileB.setPosInGrid(tempPosA)
+	tileB.set_pos(Vector2(tempPosA.x*16, tempPosA.y*16))
+	
+			
+# Updates the colors of the two swapping tiles
+func updateSwapColors():
+	var opacity = max(1-2*abs(elapsedSwappingTime-SWAP_ANIM_DURATION/2),0);
+	if(opacity>0 and swapping):
+		swapBase.find_node("DistanceSprite_Grey").show();
+		swapBase.find_node("DistanceSprite_Grey").set_opacity(opacity);
+		swapTarget.find_node("DistanceSprite_Grey").show();
+		swapTarget.find_node("DistanceSprite_Grey").set_opacity(opacity);
+	else:
+		swapBase.find_node("DistanceSprite_Grey").hide();
+		swapTarget.find_node("DistanceSprite_Grey").hide();
