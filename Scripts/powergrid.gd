@@ -7,6 +7,9 @@ var GRID_HEIGHT = 20
 var GENERATOR_DENSITY = 0.012;
 var GENERATOR_COUNT = ceil(GENERATOR_DENSITY*GRID_WIDTH*GRID_HEIGHT);
 
+var DIAMOND_DENSITY = 0.012;
+var DIAMOND_COUNT = ceil(GENERATOR_DENSITY*GRID_WIDTH*GRID_HEIGHT);
+
 var SPARK_INTERVAL = 5;
 var spark_elapsed = 0.0;
 
@@ -111,19 +114,10 @@ func _ready():
 	for i in range(-1, 2, 1):
 		for j in range(-1, 2, 1):
 			grid[GRID_WIDTH / 2 + i][GRID_HEIGHT / 2 + j] = CENTRAL_TILE
-	#Hard-coded external generator
-	for i in range(GENERATOR_COUNT):
-		var generatorX=-1;
-		var generatorY=-1;
-		while(generatorX == -1 or generatorY == -1 or isOverlapping(generatorX, generatorY)):
-			generatorX=(randi() % GRID_WIDTH-1);
-			generatorY=(randi() % GRID_HEIGHT-1);
-		grid[generatorX][generatorY] = GENERATOR_TILE;
-		grid[generatorX+1][generatorY] = GENERATOR_TILE;
-		grid[generatorX][generatorY+1] = GENERATOR_TILE;
-		grid[generatorX+1][generatorY+1] = GENERATOR_TILE;
-	#TEST - top-left tile is diamond tile
-	grid[0][0] = DIAMOND_TILE
+
+	addGenerators();
+	addDiamonds();
+	
 	#Create a 2D array for the actual tile objects
 	for x in range(GRID_WIDTH):
 		objectGrid.append([])
@@ -163,7 +157,16 @@ func isOverlapping(generatorX, generatorY):
 	overlap = overlap or grid[generatorX+1][generatorY] == CENTRAL_TILE;
 	overlap = overlap or grid[generatorX][generatorY+1] == CENTRAL_TILE;
 	overlap = overlap or grid[generatorX+1][generatorY+1] == CENTRAL_TILE;
+	overlap = overlap or grid[generatorX][generatorY] == DIAMOND_TILE;
+	overlap = overlap or grid[generatorX+1][generatorY] == DIAMOND_TILE;
+	overlap = overlap or grid[generatorX][generatorY+1] == DIAMOND_TILE;
+	overlap = overlap or grid[generatorX+1][generatorY+1] == DIAMOND_TILE;
+	
 	return(overlap);
+	
+func isOccupied(x,y):
+	var tile=grid[x][y];
+	return(tile==GENERATOR_TILE or tile==CENTRAL_TILE or tile==DIAMOND_TILE);
 
 #After the 2D array of numbers for the tiles is generated,
 #spawn the tile objects
@@ -178,6 +181,28 @@ func createTilesFromGrid(grid):
 			self.add_child(tileObj)
 			objectGrid[x][y] = tileObj
 
+func addGenerators():
+	for i in range(GENERATOR_COUNT):
+		var generatorX=-1;
+		var generatorY=-1;
+		while(generatorX == -1 or generatorY == -1 or isOverlapping(generatorX, generatorY)):
+			generatorX=(randi() % GRID_WIDTH-1);
+			generatorY=(randi() % GRID_HEIGHT-1);
+		grid[generatorX][generatorY] = GENERATOR_TILE;
+		grid[generatorX+1][generatorY] = GENERATOR_TILE;
+		grid[generatorX][generatorY+1] = GENERATOR_TILE;
+		grid[generatorX+1][generatorY+1] = GENERATOR_TILE;
+
+func addDiamonds():
+	for i in range(DIAMOND_COUNT):
+		var diamondX=-1;
+		var diamondY=-1;
+		while(diamondX == -1 or diamondY == -1 or isOccupied(diamondX, diamondY)):
+			diamondX=(randi() % GRID_WIDTH-1);
+			diamondY=(randi() % GRID_HEIGHT-1);
+		grid[diamondX][diamondY] = DIAMOND_TILE;
+
+
 #Returns the tile type at (x, y) or -1 if invalid position
 func getTileTypeAt(x, y):
 	if(isValidGridPos(x, y)):
@@ -191,6 +216,8 @@ func getTileAt(x, y):
 		return objectGrid[x][y]
 	else:
 		return null
+
+
 
 #Checks if the given position is within the bounds of the grid
 func isValidGridPos(x, y):
