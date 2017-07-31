@@ -7,8 +7,8 @@ var GRID_HEIGHT = 20
 var GENERATOR_DENSITY = 0.012;
 var GENERATOR_COUNT = ceil(GENERATOR_DENSITY*GRID_WIDTH*GRID_HEIGHT);
 
-var DIAMOND_DENSITY = 0.012;
-var DIAMOND_COUNT = ceil(GENERATOR_DENSITY*GRID_WIDTH*GRID_HEIGHT);
+var DIAMOND_DENSITY = 0.012
+var DIAMOND_COUNT = ceil(DIAMOND_DENSITY*GRID_WIDTH*GRID_HEIGHT);
 
 var SPARK_INTERVAL = 5;
 var spark_elapsed = 0.0;
@@ -37,11 +37,14 @@ var GENERATOR_STARTING_CHARGE_COUNT = 1;
 var sparkScene = load("res://Scenes/spark.tscn")
 var diamondSparkScene = load("res://Scenes/diamond_spark.tscn")
 var gridTileScene = load("res://Scenes/grid_tile.tscn")
+var levelLabel
 var powerMeter
 var diamondMeter
 var grid #2D array of tiles represented by their type
 var objectGrid #2D array of tile objects
 var uidGrid = []
+
+var currentLevel
 
 ##Tile types:##
 #0 = horizontal (left-right)
@@ -68,11 +71,10 @@ func testNavigate(startX, startY):
 	var startDir = LEFT #spark will enter from the left
 	#testNavigateHelper(startX, startY, startDir)
 
-		
 func testNavigateHelper(x, y, entryDir, sparkCreatorUid):
 	if(x < 0 or x > GRID_WIDTH - 1 or y < 0 or y > GRID_HEIGHT - 1):
 		return
-		
+
 	var tileObj = getTileAt(x, y)
 	#Make sure a tile object exists at (x, y)
 	if(tileObj == null):
@@ -154,10 +156,76 @@ func diamondNavigate(x, y, entryDir):
 		#Spark fizzles out
 		return false
 
+func clearGrid():
+	for child in self.get_children():
+		if(child != powerMeter and child != diamondMeter and child != levelLabel):
+			child.queue_free()
+
+func resetVariables():
+	spark_elapsed = 0.0;
+	diamond_spark_elapsed = 0.0
+	
+	swapping = false;
+	tilesSwapped = false;
+	elapsedSwappingTime = 0.0;
+	swapBase = null;
+	swapTarget = null;
+	swapQueue = []
+	energy = 4
+	selectedTile = null
+	
+	uniqueCounter = 0;
+	sparkCounts = [];
+	generatorCharges = [];
+
+func updateLevelDisplay():
+	levelLabel.set_text("Level " + str(currentLevel))
+
+func generateNewLevel():
+	randomize() #Change the seed for any random operations
+	#Set the max number of diamonds needed
+	diamondMeter.find_node("DiamondBar").set_max(DIAMOND_COUNT)
+	#Set the current diamond count of the diamond bar to 0
+	diamondMeter.find_node("DiamondBar").set_val(0)
+	clearGrid()
+	resetVariables()
+	currentLevel += 1
+	updateLevelDisplay()
+	#Create 2D array for grid
+	grid = []
+	objectGrid = []
+	uidGrid = []
+	for x in range(GRID_WIDTH):
+		grid.append([])
+		uidGrid.append([]);
+		for y in range(GRID_HEIGHT):
+			grid[x].append(randi() % 6) 
+			uidGrid[x].append(-1);
+	#Hard-coded central generator
+	for i in range(-1, 2, 1):
+		for j in range(-1, 2, 1):
+			grid[GRID_WIDTH / 2 + i][GRID_HEIGHT / 2 + j] = CENTRAL_TILE
+
+	addGenerators();
+	addDiamonds();
+
+	for i in range(uniqueCounter):
+		sparkCounts.append(0);
+		generatorCharges.append(GENERATOR_STARTING_CHARGE_COUNT);
+
+	#Create a 2D array for the actual tile objects
+	for x in range(GRID_WIDTH):
+		objectGrid.append([])
+		for y in range(GRID_HEIGHT):
+			objectGrid[x].append(null)
+	createTilesFromGrid(grid)
+
 func _ready():
 	randomize() #Change the seed for any random operations
+	currentLevel = 1
 	powerMeter = find_node("PowerMeter")
 	diamondMeter = find_node("DiamondMeter")
+	levelLabel = find_node("LevelLabel")
 	#Set the max number of diamonds needed
 	diamondMeter.find_node("DiamondBar").set_max(DIAMOND_COUNT)
 	#Set the current diamond count of the diamond bar to 0
@@ -246,6 +314,9 @@ func createTilesFromGrid(grid):
 			tileObj.setPosInGrid(Vector2(x, y))
 			tileObj.setType(tileType)
 			self.add_child(tileObj)
+			#DEBUG TEST
+			if(tileType == DIAMOND_TILE):
+				tileObj.set_name("DiamondTile")
 			objectGrid[x][y] = tileObj
 
 func addGenerators():
@@ -269,6 +340,7 @@ func addGenerators():
 		uniqueCounter+=1;
 
 func addDiamonds():
+	print("diamond count: ", DIAMOND_COUNT)
 	for i in range(DIAMOND_COUNT):
 		var diamondX=-1;
 		var diamondY=-1;
@@ -355,6 +427,8 @@ func _process(delta):
 	powerDrain(delta);
 	generatorSpark(delta);
 	diamondSpark(delta)
+	if(diamondMeter.find_node("DiamondBar").get_val() >= DIAMOND_COUNT):
+		self.generateNewLevel()
 
 func generatorSpark(delta):
 	spark_elapsed += delta;
