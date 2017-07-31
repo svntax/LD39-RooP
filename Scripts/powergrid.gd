@@ -26,6 +26,7 @@ var selectedTile = null
 var sparkScene = load("res://Scenes/spark.tscn")
 var gridTileScene = load("res://Scenes/grid_tile.tscn")
 var powerMeter
+var diamondMeter
 var grid #2D array of tiles represented by their type
 var objectGrid #2D array of tile objects
 
@@ -37,8 +38,11 @@ var objectGrid #2D array of tile objects
 #4 = up-left corner
 #5 = up-right corner
 #6 = central generator
+#7 = external generator
+#8 = diamond tile
 var CENTRAL_TILE = 6
 var GENERATOR_TILE = 7
+var DIAMOND_TILE = 8
 
 #The 4 exits possible for each tile
 var UP = 0
@@ -95,6 +99,7 @@ func testNavigateHelper(x, y, entryDir):
 func _ready():
 	randomize() #Change the seed for any random operations
 	powerMeter = find_node("PowerMeter")
+	diamondMeter = find_node("DiamondMeter")
 	#Create 2D array for grid
 	grid = []
 	objectGrid = []
@@ -117,6 +122,8 @@ func _ready():
 		grid[generatorX+1][generatorY] = GENERATOR_TILE;
 		grid[generatorX][generatorY+1] = GENERATOR_TILE;
 		grid[generatorX+1][generatorY+1] = GENERATOR_TILE;
+	#TEST - top-left tile is diamond tile
+	grid[0][0] = DIAMOND_TILE
 	#Create a 2D array for the actual tile objects
 	for x in range(GRID_WIDTH):
 		objectGrid.append([])

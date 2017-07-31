@@ -9,6 +9,8 @@ extends Node2D
 #4 = up-left corner
 #5 = up-right corner
 #6 = central generator
+#7 = external generator
+#8 = diamond tile
 
 #The points where a spark can enter or exit from
 var UP = 0
@@ -44,6 +46,8 @@ func setType(type):
 		tileSprite.set_region_rect(Rect2(0, 16, 16, 16))
 	elif(type == 7): #generator tile
 		tileSprite.set_region_rect(Rect2(16, 16, 16, 16))
+	elif(type == 8): #diamond tile
+		tileSprite.set_region_rect(Rect2(32, 16, 16, 16))
 	if(type == 0): #left-right horizontal tile
 		exit1 = LEFT
 		exit2 = RIGHT
