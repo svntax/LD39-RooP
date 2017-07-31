@@ -157,7 +157,6 @@ func isOverlapping(generatorX, generatorY):
 	overlap = overlap or grid[generatorX][generatorY+1] == CENTRAL_TILE;
 	overlap = overlap or grid[generatorX+1][generatorY+1] == CENTRAL_TILE;
 	return(overlap);
-		
 
 #After the 2D array of numbers for the tiles is generated,
 #spawn the tile objects
@@ -189,7 +188,6 @@ func getTileAt(x, y):
 #Checks if the given position is within the bounds of the grid
 func isValidGridPos(x, y):
 	return (x >= 0 and x < GRID_WIDTH and y >= 0 and y < GRID_HEIGHT)
-
 
 #Debug function - used to print an exit direction as a string
 func exitAsString(exit):
