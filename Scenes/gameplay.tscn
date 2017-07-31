@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=1]
+[gd_scene load_steps=5 format=1]
 
 [ext_resource path="res://Scripts/gameplay_controls.gd" type="Script" id=1]
 [ext_resource path="res://Scenes/pause_menu_ui.scn" type="PackedScene" id=2]
-[ext_resource path="res://Scenes/powergrid.tscn" type="PackedScene" id=3]
+[ext_resource path="res://Scenes/gameover_ui.scn" type="PackedScene" id=3]
+[ext_resource path="res://Scenes/powergrid.tscn" type="PackedScene" id=4]
 
 [node name="Game" type="Node2D"]
 
@@ -35,6 +36,14 @@ margin/top = -800.0
 margin/right = -288.0
 margin/bottom = -672.0
 
-[node name="PowerGrid" parent="." instance=ExtResource( 3 )]
+[node name="GameOverMenu" parent="." instance=ExtResource( 3 )]
+
+visibility/visible = false
+margin/left = -600.0
+margin/top = -600.0
+margin/right = -232.0
+margin/bottom = -472.0
+
+[node name="PowerGrid" parent="." instance=ExtResource( 4 )]
 
 

@@ -45,6 +45,8 @@ percent_visible = 1.0
 lines_skipped = 0
 max_lines_visible = -1
 
+[connection signal="value_changed" from="PowerMeter/PowerBar" to="PowerMeter/PowerBar/Label" method="_on_PowerBar_value_changed"]
+
 [connection signal="value_changed" from="DiamondMeter/DiamondBar" to="DiamondMeter/DiamondBar/Label" method="_on_DiamondBar_value_changed"]
 
 

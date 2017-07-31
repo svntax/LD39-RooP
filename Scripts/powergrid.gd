@@ -34,7 +34,7 @@ var selectedTile = null
 var uniqueCounter = 0;
 var sparkCounts = [];
 var generatorCharges = [];
-var GENERATOR_STARTING_CHARGE_COUNT = 6;
+var GENERATOR_STARTING_CHARGE_COUNT = 10;
 
 var popupTextScene = load("res://Scenes/popup_text.tscn")
 var sparkScene = load("res://Scenes/spark.tscn")
@@ -230,6 +230,7 @@ func _ready():
 	randomize() #Change the seed for any random operations
 	currentLevel = 1
 	powerMeter = find_node("PowerMeter")
+	powerMeter.find_node("PowerBar").set_val(INITIAL_POWER)
 	diamondMeter = find_node("DiamondMeter")
 	levelLabel = find_node("LevelLabel")
 	#Set the max number of diamonds needed
@@ -527,6 +528,10 @@ func diamondSpark(delta):
 func powerDrain(delta):
 	var powerBar = powerMeter.find_node("PowerBar")
 	powerBar.set_val(powerBar.get_val()-delta*powerDrainRate);
+	if(powerBar.get_val() <= 0):
+		var gameOverMenu = get_tree().get_root().get_node("Game").find_node("GameOverMenu")
+		gameOverMenu.toggle()
+		get_tree().set_pause(true)
 
 # The first function in the swap operation. Kicks off the process.
 func beginSwap(tileA, tileB):
