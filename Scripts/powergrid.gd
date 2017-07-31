@@ -7,6 +7,9 @@ var GRID_HEIGHT = 20
 var GENERATOR_DENSITY = 0.012;
 var GENERATOR_COUNT = ceil(GENERATOR_DENSITY*GRID_WIDTH*GRID_HEIGHT);
 
+var SPARK_INTERVAL = 5;
+var spark_elapsed = 0.0;
+
 var powerDrainRate = 1.0;
 
 var SWAP_ANIM_DURATION = 2;
@@ -243,10 +246,28 @@ func showOverlayAt(x, y):
 func _process(delta):
 	handleSwapping(delta);
 	powerDrain(delta);
+	generatorSpark(delta);
 	
+func generatorSpark(delta):
+	spark_elapsed += delta;
+	if(spark_elapsed >= SPARK_INTERVAL):
+		spark_elapsed = 0;
+		for x1 in range(GRID_WIDTH):
+			for y1 in range(GRID_HEIGHT):
+				if(grid[x1][y1] == GENERATOR_TILE):
+					if(isValidGridPos(x1-1, y1)):
+						testNavigateHelper(x1-1, y1, RIGHT);
+					if(isValidGridPos(x1+1, y1)):
+						testNavigateHelper(x1+1, y1, LEFT);
+					if(isValidGridPos(x1, y1-1)):
+						testNavigateHelper(x1, y1-1, DOWN);
+					if(isValidGridPos(x1, y1+1)):
+						testNavigateHelper(x1, y1+1, UP);
+		
 func powerDrain(delta):
 	var powerBar = powerMeter.find_node("PowerBar")
 	powerBar.set_val(powerBar.get_val()-delta*powerDrainRate);
+	
 	
 # The first function in the swap operation. Kicks off the process.
 func beginSwap(tileA, tileB):
