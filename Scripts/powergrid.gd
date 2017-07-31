@@ -66,18 +66,12 @@ var DOWN = 3
 #test function
 func testNavigate(startX, startY):
 	var startDir = LEFT #spark will enter from the left
-	testNavigateHelper(startX, startY, startDir)
+	#testNavigateHelper(startX, startY, startDir)
 
-func testNavigateHelper(x, y, entryDir):
-	
-	#Stay within  bounds
+		
+func testNavigateHelper(x, y, entryDir, sparkCreatorUid):
 	if(x < 0 or x > GRID_WIDTH - 1 or y < 0 or y > GRID_HEIGHT - 1):
 		return
-	
-	# Get the uid from the grid
-	var sparkCreatorUid = -1;
-	if(uidGrid[x][y]!=-1):
-		sparkCreatorUid=uidGrid[x][y];
 		
 	var tileObj = getTileAt(x, y)
 	#Make sure a tile object exists at (x, y)
@@ -100,13 +94,13 @@ func testNavigateHelper(x, y, entryDir):
 			currentExit = exit1
 		#Recursively check the next tile
 		if(currentExit == UP):
-			testNavigateHelper(x, y - 1, DOWN)
+			testNavigateHelper(x, y - 1, DOWN, sparkCreatorUid)
 		elif(currentExit == LEFT):
-			testNavigateHelper(x - 1, y, RIGHT)
+			testNavigateHelper(x - 1, y, RIGHT, sparkCreatorUid)
 		elif(currentExit == RIGHT):
-			testNavigateHelper(x + 1, y, LEFT)
+			testNavigateHelper(x + 1, y, LEFT, sparkCreatorUid)
 		elif(currentExit == DOWN):
-			testNavigateHelper(x, y + 1, UP)
+			testNavigateHelper(x, y + 1, UP, sparkCreatorUid)
 	#Spark reached the central generator
 	elif(tileObj.getType() == CENTRAL_TILE):
 		var powerBar = powerMeter.find_node("PowerBar")
@@ -186,7 +180,6 @@ func _ready():
 
 	addGenerators();
 	addDiamonds();
-	
 	
 	for i in range(uniqueCounter):
 		sparkCounts.append(0);
@@ -365,7 +358,6 @@ func _process(delta):
 func generatorSpark(delta):
 	spark_elapsed += delta;
 	
-		
 	if(spark_elapsed >= SPARK_INTERVAL):
 		spark_elapsed = 0;
 		for i in range(uniqueCounter):
@@ -374,13 +366,13 @@ func generatorSpark(delta):
 			for y1 in range(GRID_HEIGHT):
 				if(grid[x1][y1] == GENERATOR_TILE):
 					if(isValidGridPos(x1-1, y1)):
-						testNavigateHelper(x1-1, y1, RIGHT);
+						testNavigateHelper(x1-1, y1, RIGHT, uidGrid[x1][y1]);
 					if(isValidGridPos(x1+1, y1)):
-						testNavigateHelper(x1+1, y1, LEFT);
+						testNavigateHelper(x1+1, y1, LEFT, uidGrid[x1][y1]);
 					if(isValidGridPos(x1, y1-1)):
-						testNavigateHelper(x1, y1-1, DOWN);
+						testNavigateHelper(x1, y1-1, DOWN, uidGrid[x1][y1]);
 					if(isValidGridPos(x1, y1+1)):
-						testNavigateHelper(x1, y1+1, UP);
+						testNavigateHelper(x1, y1+1, UP, uidGrid[x1][y1]);
 		var energyGain = 0;
 		for i in range(uniqueCounter):
 			if(sparkCounts[i]==0):
@@ -396,6 +388,7 @@ func generatorSpark(delta):
 					energyGain+=15;
 				elif(sparkCounts[i]>=3):
 					energyGain+=20;
+			
 		var powerBar = powerMeter.find_node("PowerBar")
 		powerBar.set_val(powerBar.get_val()+energyGain);
 func diamondSpark(delta):
