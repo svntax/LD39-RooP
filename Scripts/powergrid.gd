@@ -67,12 +67,16 @@ func testNavigate(startX, startY):
 	testNavigateHelper(startX, startY, startDir)
 
 func testNavigateHelper(x, y, entryDir):
-	var sparkCreatorUid = -1;
-	if(uidGrid[x][y]!=-1):
-		sparkCreatorUid=uidGrid[x][y];
+	
 	#Stay within  bounds
 	if(x < 0 or x > GRID_WIDTH - 1 or y < 0 or y > GRID_HEIGHT - 1):
 		return
+	
+	# Get the uid from the grid
+	var sparkCreatorUid = -1;
+	if(uidGrid[x][y]!=-1):
+		sparkCreatorUid=uidGrid[x][y];
+		
 	var tileObj = getTileAt(x, y)
 	#Make sure a tile object exists at (x, y)
 	if(tileObj == null):
