@@ -1,0 +1,14 @@
+[gd_scene load_steps=2 format=1]
+
+[ext_resource path="res://Scenes/main_menu_ui.scn" type="PackedScene" id=1]
+
+[node name="MainMenu" type="Node"]
+
+[node name="MainMenuContainer" parent="." instance=ExtResource( 1 )]
+
+margin/left = 344.0
+margin/top = 400.0
+margin/right = 456.0
+margin/bottom = 480.0
+
+

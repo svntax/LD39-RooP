@@ -13,6 +13,9 @@ var DIAMOND_COUNT = ceil(GENERATOR_DENSITY*GRID_WIDTH*GRID_HEIGHT);
 var SPARK_INTERVAL = 5;
 var spark_elapsed = 0.0;
 
+var DIAMOND_SPARK_INTERVAL = 5
+var diamond_spark_elapsed = 0.0
+
 var powerDrainRate = 1.0;
 
 var SWAP_ANIM_DURATION = 2;
@@ -30,6 +33,7 @@ var uniqueCounter = 0;
 var sparkCounts = [];
 
 var sparkScene = load("res://Scenes/spark.tscn")
+var diamondSparkScene = load("res://Scenes/diamond_spark.tscn")
 var gridTileScene = load("res://Scenes/grid_tile.tscn")
 var powerMeter
 var diamondMeter
@@ -106,6 +110,49 @@ func testNavigateHelper(x, y, entryDir):
 	else:
 		#Spark fizzles out
 		pass
+
+#Returns true if the diamond successfully connected with a central tile
+func diamondNavigate(x, y, entryDir):
+	#Stay within  bounds
+	if(x < 0 or x > GRID_WIDTH - 1 or y < 0 or y > GRID_HEIGHT - 1):
+		return false
+	var tileObj = getTileAt(x, y)
+	#Make sure a tile object exists at (x, y)
+	if(tileObj == null):
+		return false
+	var exit1 = tileObj.getExit1()
+	var exit2 = tileObj.getExit2()
+	#Check if spark can enter the tile
+	if(entryDir == exit1 or entryDir == exit2):
+		#Test - visually mark the tile visited with a spark
+		var spark = diamondSparkScene.instance()
+		spark.set_pos(tileObj.get_pos() + Vector2(8, 8))
+		self.add_child(spark)
+		var nextEntryDir = -1
+		var currentExit = -1
+		#Get the next direction the spark will enter from
+		if(entryDir == exit1):
+			currentExit = exit2
+		elif(entryDir == exit2):
+			currentExit = exit1
+		#Recursively check the next tile
+		if(currentExit == UP):
+			return diamondNavigate(x, y - 1, DOWN)
+		elif(currentExit == LEFT):
+			return diamondNavigate(x - 1, y, RIGHT)
+		elif(currentExit == RIGHT):
+			return diamondNavigate(x + 1, y, LEFT)
+		elif(currentExit == DOWN):
+			return diamondNavigate(x, y + 1, UP)
+	#Spark reached the central generator
+	elif(tileObj.getType() == CENTRAL_TILE):
+		var diamondBar = diamondMeter.find_node("DiamondBar")
+		var diamondsCollected = diamondBar.get_val()
+		diamondBar.set_val(diamondsCollected + 1)
+		return true
+	else:
+		#Spark fizzles out
+		return false
 
 func _ready():
 	randomize() #Change the seed for any random operations
@@ -246,7 +293,6 @@ func getTileAt(x, y):
 		return null
 
 
-
 #Checks if the given position is within the bounds of the grid
 func isValidGridPos(x, y):
 	return (x >= 0 and x < GRID_WIDTH and y >= 0 and y < GRID_HEIGHT)
@@ -307,7 +353,8 @@ func _process(delta):
 	handleSwapping(delta);
 	powerDrain(delta);
 	generatorSpark(delta);
-	
+	diamondSpark(delta)
+
 func generatorSpark(delta):
 	spark_elapsed += delta;
 	
@@ -339,6 +386,37 @@ func generatorSpark(delta):
 				energyGain+=20;
 		var powerBar = powerMeter.find_node("PowerBar")
 		powerBar.set_val(powerBar.get_val()+energyGain);
+func diamondSpark(delta):
+	diamond_spark_elapsed += delta;
+	if(diamond_spark_elapsed >= DIAMOND_SPARK_INTERVAL):
+		diamond_spark_elapsed = 0;
+		for x1 in range(GRID_WIDTH):
+			for y1 in range(GRID_HEIGHT):
+				if(grid[x1][y1] == DIAMOND_TILE):
+					if(getTileAt(x1, y1).isDrained()):
+						return
+					if(isValidGridPos(x1-1, y1)):
+						if(diamondNavigate(x1-1, y1, RIGHT)):
+							getTileAt(x1, y1).drainDiamond()
+					#Check again if diamond is drained or not
+					if(getTileAt(x1, y1).isDrained()):
+						return
+					if(isValidGridPos(x1+1, y1)):
+						if(diamondNavigate(x1+1, y1, LEFT)):
+							getTileAt(x1, y1).drainDiamond()
+					#Check again if diamond is drained or not
+					if(getTileAt(x1, y1).isDrained()):
+						return
+					if(isValidGridPos(x1, y1-1)):
+						if(diamondNavigate(x1, y1-1, DOWN)):
+							getTileAt(x1, y1).drainDiamond()
+					#Check again if diamond is drained or not
+					if(getTileAt(x1, y1).isDrained()):
+						return
+					if(isValidGridPos(x1, y1+1)):
+						if(diamondNavigate(x1, y1+1, UP)):
+							getTileAt(x1, y1).drainDiamond()
+
 func powerDrain(delta):
 	var powerBar = powerMeter.find_node("PowerBar")
 	powerBar.set_val(powerBar.get_val()-delta*powerDrainRate);

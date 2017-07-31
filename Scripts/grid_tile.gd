@@ -23,9 +23,11 @@ var gridPos
 var exit1
 var exit2
 var sparkInTile #If there is currently a spark in this tile
+var drained
 
 func _ready():
 	sparkInTile = false
+	drained = false
 
 func getPosInGrid():
 	return gridPos
@@ -75,3 +77,11 @@ func getExit2():
 
 func isSparkInTile():
 	return sparkInTile
+
+func drainDiamond():
+	self.find_node("DrainedDiamond").show()
+	drained = true
+
+#For diamond tiles, check if drained or not
+func isDrained():
+	return drained
