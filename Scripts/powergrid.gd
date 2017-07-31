@@ -31,6 +31,8 @@ var selectedTile = null
 
 var uniqueCounter = 0;
 var sparkCounts = [];
+var generatorCharges = [];
+var GENERATOR_STARTING_CHARGE_COUNT = 10;
 
 var sparkScene = load("res://Scenes/spark.tscn")
 var diamondSparkScene = load("res://Scenes/diamond_spark.tscn")
@@ -188,6 +190,7 @@ func _ready():
 	
 	for i in range(uniqueCounter):
 		sparkCounts.append(0);
+		generatorCharges.append(GENERATOR_STARTING_CHARGE_COUNT);
 	
 	#Create a 2D array for the actual tile objects
 	for x in range(GRID_WIDTH):
@@ -382,12 +385,17 @@ func generatorSpark(delta):
 		for i in range(uniqueCounter):
 			if(sparkCounts[i]==0):
 				pass;
-			if(sparkCounts[i]==1):
-				energyGain+=10;
-			elif(sparkCounts[i]==2):
-				energyGain+=15;
-			elif(sparkCounts[i]>=3):
-				energyGain+=20;
+			elif(generatorCharges[i]>0):
+				generatorCharges[i]-=1;
+				if(generatorCharges[i]==0):
+					# REPLACE THIS PASS WITH VISUAL DEACTIVATION!
+					pass;
+				if(sparkCounts[i]==1):
+					energyGain+=10;
+				elif(sparkCounts[i]==2):
+					energyGain+=15;
+				elif(sparkCounts[i]>=3):
+					energyGain+=20;
 		var powerBar = powerMeter.find_node("PowerBar")
 		powerBar.set_val(powerBar.get_val()+energyGain);
 func diamondSpark(delta):
