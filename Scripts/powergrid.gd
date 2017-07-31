@@ -18,7 +18,7 @@ var diamond_spark_elapsed = 0.0
 
 var powerDrainRate = 1.0;
 
-var SWAP_ANIM_DURATION = 2;
+var SWAP_ANIM_DURATION = 0.5;
 var swapping = false;
 var tilesSwapped = false;
 var elapsedSwappingTime = 0.0;
@@ -205,14 +205,14 @@ func _input(event):
 			if(isValidGridPos(mouseTileX, mouseTileY)):
 				if(getTileAt(mouseTileX, mouseTileY).getType() <= 5):
 					selectTileAt(mouseTileX, mouseTileY)
-		elif(event.button_index == BUTTON_RIGHT && event.pressed):
-			#Test - right click on a tile, then sparks will form on the path
-			#starting from the left side of the clicked tile
-			if(getTileAt(mouseTileX, mouseTileY).getType() <= 5):
-				testNavigate(mouseTileX, mouseTileY)
-	if(event.type == InputEvent.KEY):
-		if(event.scancode==KEY_ESCAPE):
-			clearOverlay();
+#		elif(event.button_index == BUTTON_RIGHT && event.pressed):
+#			#Test - right click on a tile, then sparks will form on the path
+#			#starting from the left side of the clicked tile
+#			if(getTileAt(mouseTileX, mouseTileY).getType() <= 5):
+#				testNavigate(mouseTileX, mouseTileY)
+#	if(event.type == InputEvent.KEY):
+#		if(event.scancode==KEY_ESCAPE):
+#			clearOverlay();
 
 func isOverlapping(generatorX, generatorY):
 	var overlap = false;
@@ -228,9 +228,9 @@ func isOverlapping(generatorX, generatorY):
 	overlap = overlap or grid[generatorX+1][generatorY] == DIAMOND_TILE;
 	overlap = overlap or grid[generatorX][generatorY+1] == DIAMOND_TILE;
 	overlap = overlap or grid[generatorX+1][generatorY+1] == DIAMOND_TILE;
-	
+
 	return(overlap);
-	
+
 func isOccupied(x,y):
 	var tile=grid[x][y];
 	return(tile==GENERATOR_TILE or tile==CENTRAL_TILE or tile==DIAMOND_TILE);
@@ -277,7 +277,6 @@ func addDiamonds():
 			diamondY=(randi() % GRID_HEIGHT-1);
 		grid[diamondX][diamondY] = DIAMOND_TILE;
 
-
 #Returns the tile type at (x, y) or -1 if invalid position
 func getTileTypeAt(x, y):
 	if(isValidGridPos(x, y)):
@@ -291,7 +290,6 @@ func getTileAt(x, y):
 		return objectGrid[x][y]
 	else:
 		return null
-
 
 #Checks if the given position is within the bounds of the grid
 func isValidGridPos(x, y):
@@ -313,6 +311,9 @@ func selectTileAt(x, y):
 	#Do nothing if trying to select central generator
 	#if(getTileAt(x, y).getType() == CENTRAL_TILE):
 		#return
+	#Cannot swap if there is a swapping animation
+	if(swapping):
+		return
 	#If no selected tile, select the clicked tile
 	if(selectedTile == null):
 		selectedTile = getTileAt(x, y)
@@ -348,7 +349,7 @@ func showOverlayAt(x, y):
 				targetTile.find_node("DistanceSprite_Green").show();
 			else:
 				targetTile.find_node("DistanceSprite_Blue").show();
-				
+
 func _process(delta):
 	handleSwapping(delta);
 	powerDrain(delta);
@@ -365,14 +366,15 @@ func generatorSpark(delta):
 		for x1 in range(GRID_WIDTH):
 			for y1 in range(GRID_HEIGHT):
 				if(grid[x1][y1] == GENERATOR_TILE):
-					if(isValidGridPos(x1-1, y1)):
-						testNavigateHelper(x1-1, y1, RIGHT, uidGrid[x1][y1]);
-					if(isValidGridPos(x1+1, y1)):
-						testNavigateHelper(x1+1, y1, LEFT, uidGrid[x1][y1]);
-					if(isValidGridPos(x1, y1-1)):
-						testNavigateHelper(x1, y1-1, DOWN, uidGrid[x1][y1]);
-					if(isValidGridPos(x1, y1+1)):
-						testNavigateHelper(x1, y1+1, UP, uidGrid[x1][y1]);
+					if(not getTileAt(x1, y1).isDrained()):
+						if(isValidGridPos(x1-1, y1)):
+							testNavigateHelper(x1-1, y1, RIGHT, uidGrid[x1][y1]);
+						if(isValidGridPos(x1+1, y1)):
+							testNavigateHelper(x1+1, y1, LEFT, uidGrid[x1][y1]);
+						if(isValidGridPos(x1, y1-1)):
+							testNavigateHelper(x1, y1-1, DOWN, uidGrid[x1][y1]);
+						if(isValidGridPos(x1, y1+1)):
+							testNavigateHelper(x1, y1+1, UP, uidGrid[x1][y1]);
 		var energyGain = 0;
 		for i in range(uniqueCounter):
 			if(sparkCounts[i]==0):
@@ -380,10 +382,9 @@ func generatorSpark(delta):
 			elif(generatorCharges[i]>0):
 				generatorCharges[i]-=1;
 				if(generatorCharges[i]==0):
-					# REPLACE THIS PASS WITH VISUAL DEACTIVATION!
+					#Visual deactivation
 					for x2 in range(GRID_WIDTH):
 						for y2 in range(GRID_HEIGHT):
-							#Seems to be the wrong uid?
 							if(uidGrid[x2][y2] == i):
 								if(!getTileAt(x2, y2).isDrained()):
 									getTileAt(x2, y2).drainGenerator()
@@ -393,7 +394,7 @@ func generatorSpark(delta):
 					energyGain+=15;
 				elif(sparkCounts[i]>=3):
 					energyGain+=20;
-			
+
 		var powerBar = powerMeter.find_node("PowerBar")
 		powerBar.set_val(powerBar.get_val()+energyGain);
 
@@ -432,7 +433,6 @@ func diamondSpark(delta):
 func powerDrain(delta):
 	var powerBar = powerMeter.find_node("PowerBar")
 	powerBar.set_val(powerBar.get_val()-delta*powerDrainRate);
-
 
 # The first function in the swap operation. Kicks off the process.
 func beginSwap(tileA, tileB):
@@ -477,8 +477,7 @@ func swapTiles(tileA, tileB):
 	tileA.set_pos(Vector2(posB.x*16, posB.y*16))
 	tileB.setPosInGrid(tempPosA)
 	tileB.set_pos(Vector2(tempPosA.x*16, tempPosA.y*16))
-	
-			
+
 # Updates the colors of the two swapping tiles
 func updateSwapColors():
 	var opacity = max(1-2*abs(elapsedSwappingTime-SWAP_ANIM_DURATION/2),0);
