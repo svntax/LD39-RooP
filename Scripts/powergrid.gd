@@ -26,12 +26,16 @@ var swapQueue = []
 var energy = 4
 var selectedTile = null
 
+var uniqueCounter = 0;
+var sparkCounts = [];
+
 var sparkScene = load("res://Scenes/spark.tscn")
 var gridTileScene = load("res://Scenes/grid_tile.tscn")
 var powerMeter
 var diamondMeter
 var grid #2D array of tiles represented by their type
 var objectGrid #2D array of tile objects
+var uidGrid = []
 
 ##Tile types:##
 #0 = horizontal (left-right)
@@ -59,6 +63,9 @@ func testNavigate(startX, startY):
 	testNavigateHelper(startX, startY, startDir)
 
 func testNavigateHelper(x, y, entryDir):
+	var sparkCreatorUid = -1;
+	if(uidGrid[x][y]!=-1):
+		sparkCreatorUid=uidGrid[x][y];
 	#Stay within  bounds
 	if(x < 0 or x > GRID_WIDTH - 1 or y < 0 or y > GRID_HEIGHT - 1):
 		return
@@ -93,8 +100,9 @@ func testNavigateHelper(x, y, entryDir):
 	#Spark reached the central generator
 	elif(tileObj.getType() == CENTRAL_TILE):
 		var powerBar = powerMeter.find_node("PowerBar")
-		var currentEnergy = powerBar.get_val()
-		powerBar.set_val(currentEnergy + 5)
+		sparkCounts[sparkCreatorUid] += 1;
+		#var currentEnergy = powerBar.get_val()
+		#powerBar.set_val(currentEnergy + 5)
 	else:
 		#Spark fizzles out
 		pass
@@ -111,10 +119,13 @@ func _ready():
 	#Create 2D array for grid
 	grid = []
 	objectGrid = []
+	uidGrid = []
 	for x in range(GRID_WIDTH):
 		grid.append([])
+		uidGrid.append([]);
 		for y in range(GRID_HEIGHT):
 			grid[x].append(randi() % 6) #Random tiles for now
+			uidGrid[x].append(-1);
 	#Hard-coded central generator
 	for i in range(-1, 2, 1):
 		for j in range(-1, 2, 1):
@@ -122,6 +133,10 @@ func _ready():
 
 	addGenerators();
 	addDiamonds();
+	
+	
+	for i in range(uniqueCounter):
+		sparkCounts.append(0);
 	
 	#Create a 2D array for the actual tile objects
 	for x in range(GRID_WIDTH):
@@ -193,10 +208,18 @@ func addGenerators():
 		while(generatorX == -1 or generatorY == -1 or isOverlapping(generatorX, generatorY)):
 			generatorX=(randi() % GRID_WIDTH-1);
 			generatorY=(randi() % GRID_HEIGHT-1);
+		
 		grid[generatorX][generatorY] = GENERATOR_TILE;
 		grid[generatorX+1][generatorY] = GENERATOR_TILE;
 		grid[generatorX][generatorY+1] = GENERATOR_TILE;
 		grid[generatorX+1][generatorY+1] = GENERATOR_TILE;
+		
+		uidGrid[generatorX][generatorY] = uniqueCounter;
+		uidGrid[generatorX+1][generatorY] = uniqueCounter;
+		uidGrid[generatorX][generatorY+1] = uniqueCounter;
+		uidGrid[generatorX+1][generatorY+1] = uniqueCounter;
+		
+		uniqueCounter+=1;
 
 func addDiamonds():
 	for i in range(DIAMOND_COUNT):
@@ -287,8 +310,12 @@ func _process(delta):
 	
 func generatorSpark(delta):
 	spark_elapsed += delta;
+	
+		
 	if(spark_elapsed >= SPARK_INTERVAL):
 		spark_elapsed = 0;
+		for i in range(uniqueCounter):
+			sparkCounts[i]=0;
 		for x1 in range(GRID_WIDTH):
 			for y1 in range(GRID_HEIGHT):
 				if(grid[x1][y1] == GENERATOR_TILE):
@@ -300,7 +327,18 @@ func generatorSpark(delta):
 						testNavigateHelper(x1, y1-1, DOWN);
 					if(isValidGridPos(x1, y1+1)):
 						testNavigateHelper(x1, y1+1, UP);
-		
+		var energyGain = 0;
+		for i in range(uniqueCounter):
+			if(sparkCounts[i]==0):
+				pass;
+			if(sparkCounts[i]==1):
+				energyGain+=10;
+			elif(sparkCounts[i]==2):
+				energyGain+=15;
+			elif(sparkCounts[i]>=3):
+				energyGain+=20;
+		var powerBar = powerMeter.find_node("PowerBar")
+		powerBar.set_val(powerBar.get_val()+energyGain);
 func powerDrain(delta):
 	var powerBar = powerMeter.find_node("PowerBar")
 	powerBar.set_val(powerBar.get_val()-delta*powerDrainRate);
