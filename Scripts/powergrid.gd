@@ -30,6 +30,7 @@ var objectGrid #2D array of tile objects
 #5 = up-right corner
 #6 = central generator
 var CENTRAL_TILE = 6
+var GENERATOR_TILE = 7
 
 #The 4 exits possible for each tile
 var UP = 0
@@ -74,6 +75,7 @@ func testNavigateHelper(x, y, entryDir):
 			testNavigateHelper(x + 1, y, LEFT)
 		elif(currentExit == DOWN):
 			testNavigateHelper(x, y + 1, UP)
+	#Spark reached the central generator
 	elif(tileObj.getType() == CENTRAL_TILE):
 		var powerBar = powerMeter.find_node("PowerBar")
 		var currentEnergy = powerBar.get_val()
@@ -96,6 +98,11 @@ func _ready():
 	for i in range(-1, 2, 1):
 		for j in range(-1, 2, 1):
 			grid[GRID_WIDTH / 2 + i][GRID_HEIGHT / 2 + j] = CENTRAL_TILE
+	#Hard-coded external generator
+	grid[5][5] = GENERATOR_TILE
+	grid[5][6] = GENERATOR_TILE
+	grid[6][5] = GENERATOR_TILE
+	grid[6][6] = GENERATOR_TILE
 	#Create a 2D array for the actual tile objects
 	for x in range(GRID_WIDTH):
 		objectGrid.append([])
@@ -114,12 +121,12 @@ func _input(event):
 		if(event.button_index == BUTTON_LEFT && event.pressed):
 			#Left click is tile selection
 			if(isValidGridPos(mouseTileX, mouseTileY)):
-				if(getTileAt(mouseTileX, mouseTileY).getType() != CENTRAL_TILE):
+				if(getTileAt(mouseTileX, mouseTileY).getType() <= 5):
 					selectTileAt(mouseTileX, mouseTileY)
 		elif(event.button_index == BUTTON_RIGHT && event.pressed):
 			#Test - right click on a tile, then sparks will form on the path
 			#starting from the left side of the clicked tile
-			if(getTileAt(mouseTileX, mouseTileY).getType() != CENTRAL_TILE):
+			if(getTileAt(mouseTileX, mouseTileY).getType() <= 5):
 				testNavigate(mouseTileX, mouseTileY)
 	if(event.type == InputEvent.KEY):
 		if(event.scancode==KEY_ESCAPE):
