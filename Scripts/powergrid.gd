@@ -13,7 +13,7 @@ var DIAMOND_COUNT = ceil(GENERATOR_DENSITY*GRID_WIDTH*GRID_HEIGHT);
 var SPARK_INTERVAL = 5;
 var spark_elapsed = 0.0;
 
-var DIAMOND_SPARK_INTERVAL = 5
+var DIAMOND_SPARK_INTERVAL = 2
 var diamond_spark_elapsed = 0.0
 
 var powerDrainRate = 1.0;
@@ -396,27 +396,28 @@ func diamondSpark(delta):
 		diamond_spark_elapsed = 0;
 		for x1 in range(GRID_WIDTH):
 			for y1 in range(GRID_HEIGHT):
-				if(grid[x1][y1] == DIAMOND_TILE):
+				if(getTileTypeAt(x1, y1) == DIAMOND_TILE):
+					#print("mining at ", x1, y1)
 					if(getTileAt(x1, y1).isDrained()):
-						return
+						continue
 					if(isValidGridPos(x1-1, y1)):
 						if(diamondNavigate(x1-1, y1, RIGHT)):
 							getTileAt(x1, y1).drainDiamond()
 					#Check again if diamond is drained or not
 					if(getTileAt(x1, y1).isDrained()):
-						return
+						continue
 					if(isValidGridPos(x1+1, y1)):
 						if(diamondNavigate(x1+1, y1, LEFT)):
 							getTileAt(x1, y1).drainDiamond()
 					#Check again if diamond is drained or not
 					if(getTileAt(x1, y1).isDrained()):
-						return
+						continue
 					if(isValidGridPos(x1, y1-1)):
 						if(diamondNavigate(x1, y1-1, DOWN)):
 							getTileAt(x1, y1).drainDiamond()
 					#Check again if diamond is drained or not
 					if(getTileAt(x1, y1).isDrained()):
-						return
+						continue
 					if(isValidGridPos(x1, y1+1)):
 						if(diamondNavigate(x1, y1+1, UP)):
 							getTileAt(x1, y1).drainDiamond()

@@ -9,5 +9,4 @@ func updateValueDisplay(newAmount):
 	self.set_text(str(ceil(newAmount)) + "/" + str(maxVal))
 
 func _on_DiamondBar_value_changed( value ):
-	print("value changed")
 	updateValueDisplay(value)
