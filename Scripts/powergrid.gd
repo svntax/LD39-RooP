@@ -103,6 +103,11 @@ func _ready():
 	randomize() #Change the seed for any random operations
 	powerMeter = find_node("PowerMeter")
 	diamondMeter = find_node("DiamondMeter")
+	#Set the max number of diamonds needed
+	diamondMeter.find_node("DiamondBar").set_max(DIAMOND_COUNT)
+	#Set the current diamond count of the diamond bar to 0
+	diamondMeter.find_node("DiamondBar").set_val(0)
+	print(diamondMeter.find_node("DiamondBar").get_val())
 	#Create 2D array for grid
 	grid = []
 	objectGrid = []
