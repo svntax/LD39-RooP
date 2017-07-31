@@ -36,6 +36,7 @@ var sparkCounts = [];
 var generatorCharges = [];
 var GENERATOR_STARTING_CHARGE_COUNT = 6;
 
+var popupTextScene = load("res://Scenes/popup_text.tscn")
 var sparkScene = load("res://Scenes/spark.tscn")
 var diamondSparkScene = load("res://Scenes/diamond_spark.tscn")
 var gridTileScene = load("res://Scenes/grid_tile.tscn")
@@ -480,6 +481,15 @@ func generatorSpark(delta):
 		powerBar.set_val(powerBar.get_val()+energyGain);
 		if(energyGain > 0):
 			get_node("/root/sound_effects").play("absorb03")
+			var popup = popupTextScene.instance()
+			popup.set_scale(Vector2(0.5, 0.5))
+			popup.setText("+" + str(energyGain) + " power!")
+			self.add_child(popup)
+			var popupWidth = popup.find_node("Label1").get_rect().size.width
+			var popupHeight = popup.find_node("Label1").get_rect().size.height
+			var xPos = GRID_WIDTH / 2 * 16 - (popupWidth / 8) - 6
+			var yPos = GRID_HEIGHT / 2 * 16 - (popupHeight / 8)
+			popup.set_pos(Vector2(xPos, yPos))
 		get_node("/root/sound_effects").play("spark02")
 
 func diamondSpark(delta):
