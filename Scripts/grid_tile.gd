@@ -82,6 +82,10 @@ func drainDiamond():
 	self.find_node("DrainedDiamond").show()
 	drained = true
 
+func drainGenerator():
+	self.find_node("DrainedGenerator").show()
+	drained = true
+
 #For diamond tiles, check if drained or not
 func isDrained():
 	return drained

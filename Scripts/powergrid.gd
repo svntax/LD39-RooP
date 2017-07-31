@@ -32,7 +32,7 @@ var selectedTile = null
 var uniqueCounter = 0;
 var sparkCounts = [];
 var generatorCharges = [];
-var GENERATOR_STARTING_CHARGE_COUNT = 10;
+var GENERATOR_STARTING_CHARGE_COUNT = 1;
 
 var sparkScene = load("res://Scenes/spark.tscn")
 var diamondSparkScene = load("res://Scenes/diamond_spark.tscn")
@@ -162,7 +162,7 @@ func _ready():
 	diamondMeter.find_node("DiamondBar").set_max(DIAMOND_COUNT)
 	#Set the current diamond count of the diamond bar to 0
 	diamondMeter.find_node("DiamondBar").set_val(0)
-	print(diamondMeter.find_node("DiamondBar").get_val())
+	#print(diamondMeter.find_node("DiamondBar").get_val())
 	#Create 2D array for grid
 	grid = []
 	objectGrid = []
@@ -357,7 +357,7 @@ func _process(delta):
 
 func generatorSpark(delta):
 	spark_elapsed += delta;
-	
+
 	if(spark_elapsed >= SPARK_INTERVAL):
 		spark_elapsed = 0;
 		for i in range(uniqueCounter):
@@ -381,7 +381,12 @@ func generatorSpark(delta):
 				generatorCharges[i]-=1;
 				if(generatorCharges[i]==0):
 					# REPLACE THIS PASS WITH VISUAL DEACTIVATION!
-					pass;
+					for x2 in range(GRID_WIDTH):
+						for y2 in range(GRID_HEIGHT):
+							#Seems to be the wrong uid?
+							if(uidGrid[x2][y2] == i):
+								if(!getTileAt(x2, y2).isDrained()):
+									getTileAt(x2, y2).drainGenerator()
 				if(sparkCounts[i]==1):
 					energyGain+=10;
 				elif(sparkCounts[i]==2):
@@ -391,6 +396,7 @@ func generatorSpark(delta):
 			
 		var powerBar = powerMeter.find_node("PowerBar")
 		powerBar.set_val(powerBar.get_val()+energyGain);
+
 func diamondSpark(delta):
 	diamond_spark_elapsed += delta;
 	if(diamond_spark_elapsed >= DIAMOND_SPARK_INTERVAL):
@@ -426,8 +432,8 @@ func diamondSpark(delta):
 func powerDrain(delta):
 	var powerBar = powerMeter.find_node("PowerBar")
 	powerBar.set_val(powerBar.get_val()-delta*powerDrainRate);
-	
-	
+
+
 # The first function in the swap operation. Kicks off the process.
 func beginSwap(tileA, tileB):
 	swapping = true;
@@ -450,7 +456,7 @@ func handleSwapping(delta):
 			elapsedSwappingTime = 0.0;
 			tilesSwapped=false;
 		updateSwapColors();
-		
+
 #Swap two tiles' positions
 #Both tiles should not be null
 # This gets called HALFWAY through the swap process.

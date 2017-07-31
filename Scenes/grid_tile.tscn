@@ -1,12 +1,13 @@
-[gd_scene load_steps=9 format=1]
+[gd_scene load_steps=10 format=1]
 
 [ext_resource path="res://Scripts/grid_tile.gd" type="Script" id=1]
 [ext_resource path="res://Sprites/grid_tiles.png" type="Texture" id=2]
 [ext_resource path="res://Sprites/diamond_drained.png" type="Texture" id=3]
-[ext_resource path="res://Sprites/DistanceSpriteGrey.png" type="Texture" id=4]
-[ext_resource path="res://Sprites/DistanceSpriteGreen.png" type="Texture" id=5]
-[ext_resource path="res://Sprites/DistanceSpriteRed.png" type="Texture" id=6]
-[ext_resource path="res://Sprites/DistanceSpriteBlue.png" type="Texture" id=7]
+[ext_resource path="res://Sprites/generator_drained.png" type="Texture" id=4]
+[ext_resource path="res://Sprites/DistanceSpriteGrey.png" type="Texture" id=5]
+[ext_resource path="res://Sprites/DistanceSpriteGreen.png" type="Texture" id=6]
+[ext_resource path="res://Sprites/DistanceSpriteRed.png" type="Texture" id=7]
+[ext_resource path="res://Sprites/DistanceSpriteBlue.png" type="Texture" id=8]
 
 [sub_resource type="ImageTexture" id=1]
 
@@ -34,6 +35,12 @@ visibility/visible = false
 texture = ExtResource( 3 )
 centered = false
 
+[node name="DrainedGenerator" type="Sprite" parent="."]
+
+visibility/visible = false
+texture = ExtResource( 4 )
+centered = false
+
 [node name="DistanceSprite_Black" type="Sprite" parent="."]
 
 visibility/visible = false
@@ -47,28 +54,28 @@ region_rect = Rect2( 0, 0, 16, 16 )
 
 visibility/visible = false
 visibility/opacity = 0.6
-texture = ExtResource( 4 )
+texture = ExtResource( 5 )
 centered = false
 
 [node name="DistanceSprite_Green" type="Sprite" parent="."]
 
 visibility/visible = false
 visibility/opacity = 0.6
-texture = ExtResource( 5 )
+texture = ExtResource( 6 )
 centered = false
 
 [node name="DistanceSprite_Red" type="Sprite" parent="."]
 
 visibility/visible = false
 visibility/opacity = 0.6
-texture = ExtResource( 6 )
+texture = ExtResource( 7 )
 centered = false
 
 [node name="DistanceSprite_Blue" type="Sprite" parent="."]
 
 visibility/visible = false
 visibility/opacity = 0.6
-texture = ExtResource( 7 )
+texture = ExtResource( 8 )
 centered = false
 
 
