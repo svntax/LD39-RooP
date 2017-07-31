@@ -4,6 +4,11 @@ extends Node2D
 var GRID_WIDTH = 19
 var GRID_HEIGHT = 20
 
+var GENERATOR_DENSITY = 0.012;
+var GENERATOR_COUNT = ceil(GENERATOR_DENSITY*GRID_WIDTH*GRID_HEIGHT);
+
+var powerDrainRate = 1.0;
+
 var SWAP_ANIM_DURATION = 2;
 var swapping = false;
 var tilesSwapped = false;
@@ -99,10 +104,16 @@ func _ready():
 		for j in range(-1, 2, 1):
 			grid[GRID_WIDTH / 2 + i][GRID_HEIGHT / 2 + j] = CENTRAL_TILE
 	#Hard-coded external generator
-	grid[5][5] = GENERATOR_TILE
-	grid[5][6] = GENERATOR_TILE
-	grid[6][5] = GENERATOR_TILE
-	grid[6][6] = GENERATOR_TILE
+	for i in range(GENERATOR_COUNT):
+		var generatorX=-1;
+		var generatorY=-1;
+		while(generatorX == -1 or generatorY == -1 or isOverlapping(generatorX, generatorY)):
+			generatorX=(randi() % GRID_WIDTH-1);
+			generatorY=(randi() % GRID_HEIGHT-1);
+		grid[generatorX][generatorY] = GENERATOR_TILE;
+		grid[generatorX+1][generatorY] = GENERATOR_TILE;
+		grid[generatorX][generatorY+1] = GENERATOR_TILE;
+		grid[generatorX+1][generatorY+1] = GENERATOR_TILE;
 	#Create a 2D array for the actual tile objects
 	for x in range(GRID_WIDTH):
 		objectGrid.append([])
@@ -131,6 +142,19 @@ func _input(event):
 	if(event.type == InputEvent.KEY):
 		if(event.scancode==KEY_ESCAPE):
 			clearOverlay();
+
+func isOverlapping(generatorX, generatorY):
+	var overlap = false;
+	overlap = overlap or grid[generatorX][generatorY] == GENERATOR_TILE;
+	overlap = overlap or grid[generatorX+1][generatorY] == GENERATOR_TILE;
+	overlap = overlap or grid[generatorX][generatorY+1] == GENERATOR_TILE;
+	overlap = overlap or grid[generatorX+1][generatorY+1] == GENERATOR_TILE;
+	overlap = overlap or grid[generatorX][generatorY] == CENTRAL_TILE;
+	overlap = overlap or grid[generatorX+1][generatorY] == CENTRAL_TILE;
+	overlap = overlap or grid[generatorX][generatorY+1] == CENTRAL_TILE;
+	overlap = overlap or grid[generatorX+1][generatorY+1] == CENTRAL_TILE;
+	return(overlap);
+		
 
 #After the 2D array of numbers for the tiles is generated,
 #spawn the tile objects
@@ -218,6 +242,11 @@ func showOverlayAt(x, y):
 				
 func _process(delta):
 	handleSwapping(delta);
+	powerDrain(delta);
+	
+func powerDrain(delta):
+	var powerBar = powerMeter.find_node("PowerBar")
+	powerBar.set_val(powerBar.get_val()-delta*powerDrainRate);
 	
 # The first function in the swap operation. Kicks off the process.
 func beginSwap(tileA, tileB):

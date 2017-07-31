@@ -6,7 +6,7 @@ func _ready():
 
 func updateValueDisplay(newAmount):
 	var maxVal = get_parent().get_max()
-	self.set_text(str(newAmount) + "/" + str(maxVal))
+	self.set_text(str(ceil(newAmount)) + "/" + str(maxVal))
 
 func _on_PowerBar_value_changed(value):
 	updateValueDisplay(value)
