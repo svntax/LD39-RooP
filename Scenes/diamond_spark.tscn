@@ -1,8 +1,8 @@
 [gd_scene load_steps=2 format=1]
 
-[ext_resource path="res://Scripts/spark.gd" type="Script" id=1]
+[ext_resource path="res://Scripts/diamond_spark.gd" type="Script" id=1]
 
-[node name="Spark" type="Node2D"]
+[node name="DiamondSpark" type="Node2D"]
 
 script/script = ExtResource( 1 )
 
@@ -27,7 +27,7 @@ params/hue_variation = 0.0
 params/anim_speed_scale = 1.0
 params/anim_initial_pos = 0.0
 randomness/spread = 50.0
-color/color = Color( 1, 0.984375, 0, 1 )
+color/color = Color( 0.870588, 0.933333, 0.839216, 1 )
 
 [node name="Timer" type="Timer" parent="."]
 
