@@ -360,12 +360,21 @@ func diamondSpark(delta):
 					if(isValidGridPos(x1-1, y1)):
 						if(diamondNavigate(x1-1, y1, RIGHT)):
 							getTileAt(x1, y1).drainDiamond()
+					#Check again if diamond is drained or not
+					if(getTileAt(x1, y1).isDrained()):
+						return
 					if(isValidGridPos(x1+1, y1)):
 						if(diamondNavigate(x1+1, y1, LEFT)):
 							getTileAt(x1, y1).drainDiamond()
+					#Check again if diamond is drained or not
+					if(getTileAt(x1, y1).isDrained()):
+						return
 					if(isValidGridPos(x1, y1-1)):
 						if(diamondNavigate(x1, y1-1, DOWN)):
 							getTileAt(x1, y1).drainDiamond()
+					#Check again if diamond is drained or not
+					if(getTileAt(x1, y1).isDrained()):
+						return
 					if(isValidGridPos(x1, y1+1)):
 						if(diamondNavigate(x1, y1+1, UP)):
 							getTileAt(x1, y1).drainDiamond()
