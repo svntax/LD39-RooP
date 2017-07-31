@@ -10,7 +10,9 @@ var GENERATOR_COUNT = ceil(GENERATOR_DENSITY*GRID_WIDTH*GRID_HEIGHT);
 var DIAMOND_DENSITY = 0.012
 var DIAMOND_COUNT = ceil(DIAMOND_DENSITY*GRID_WIDTH*GRID_HEIGHT);
 
-var SPARK_INTERVAL = 5;
+var INITIAL_POWER = 200
+
+var SPARK_INTERVAL = 4;
 var spark_elapsed = 0.0;
 
 var DIAMOND_SPARK_INTERVAL = 2
@@ -32,7 +34,7 @@ var selectedTile = null
 var uniqueCounter = 0;
 var sparkCounts = [];
 var generatorCharges = [];
-var GENERATOR_STARTING_CHARGE_COUNT = 1;
+var GENERATOR_STARTING_CHARGE_COUNT = 6;
 
 var sparkScene = load("res://Scenes/spark.tscn")
 var diamondSparkScene = load("res://Scenes/diamond_spark.tscn")
@@ -151,6 +153,7 @@ func diamondNavigate(x, y, entryDir):
 		var diamondBar = diamondMeter.find_node("DiamondBar")
 		var diamondsCollected = diamondBar.get_val()
 		diamondBar.set_val(diamondsCollected + 1)
+		get_node("/root/sound_effects").play("absorb02")
 		return true
 	else:
 		#Spark fizzles out
@@ -182,14 +185,16 @@ func updateLevelDisplay():
 	levelLabel.set_text("Level " + str(currentLevel))
 
 func generateNewLevel():
+	get_node("/root/sound_effects").play("nextLevel01")
 	randomize() #Change the seed for any random operations
-	#Set the max number of diamonds needed
-	diamondMeter.find_node("DiamondBar").set_max(DIAMOND_COUNT)
-	#Set the current diamond count of the diamond bar to 0
-	diamondMeter.find_node("DiamondBar").set_val(0)
 	clearGrid()
 	resetVariables()
 	currentLevel += 1
+
+	diamondMeter.find_node("DiamondBar").set_max(DIAMOND_COUNT)
+	diamondMeter.find_node("DiamondBar").set_val(0)
+	powerMeter.find_node("PowerBar").set_val(INITIAL_POWER)
+
 	updateLevelDisplay()
 	#Create 2D array for grid
 	grid = []
@@ -390,11 +395,13 @@ func selectTileAt(x, y):
 	if(selectedTile == null):
 		selectedTile = getTileAt(x, y)
 		showOverlayAt(x, y)
+		get_node("/root/sound_effects").play("select01")
 	else:
 		var clickedTile = getTileAt(x, y)
 		#If clicked on the same tile, de-select it
 		if(selectedTile == clickedTile):
 			selectedTile = null
+			get_node("/root/sound_effects").play("select01")
 		else:
 			beginSwap(clickedTile, selectedTile)
 			selectedTile = null
@@ -471,6 +478,9 @@ func generatorSpark(delta):
 
 		var powerBar = powerMeter.find_node("PowerBar")
 		powerBar.set_val(powerBar.get_val()+energyGain);
+		if(energyGain > 0):
+			get_node("/root/sound_effects").play("absorb03")
+		get_node("/root/sound_effects").play("spark02")
 
 func diamondSpark(delta):
 	diamond_spark_elapsed += delta;
@@ -479,7 +489,6 @@ func diamondSpark(delta):
 		for x1 in range(GRID_WIDTH):
 			for y1 in range(GRID_HEIGHT):
 				if(getTileTypeAt(x1, y1) == DIAMOND_TILE):
-					#print("mining at ", x1, y1)
 					if(getTileAt(x1, y1).isDrained()):
 						continue
 					if(isValidGridPos(x1-1, y1)):
@@ -503,6 +512,7 @@ func diamondSpark(delta):
 					if(isValidGridPos(x1, y1+1)):
 						if(diamondNavigate(x1, y1+1, UP)):
 							getTileAt(x1, y1).drainDiamond()
+		get_node("/root/sound_effects").play("spark01")
 
 func powerDrain(delta):
 	var powerBar = powerMeter.find_node("PowerBar")
@@ -510,6 +520,7 @@ func powerDrain(delta):
 
 # The first function in the swap operation. Kicks off the process.
 func beginSwap(tileA, tileB):
+	get_node("/root/sound_effects").play("swap01")
 	swapping = true;
 	elapsedSwappingTime = 0.0;
 	swapBase = tileA;

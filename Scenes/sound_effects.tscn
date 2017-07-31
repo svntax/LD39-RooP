@@ -1,11 +1,28 @@
-[gd_scene load_steps=2 format=1]
+[gd_scene load_steps=10 format=1]
+
+[ext_resource path="res://Audio/absorb01.wav" type="Sample" id=1]
+[ext_resource path="res://Audio/absorb02.wav" type="Sample" id=2]
+[ext_resource path="res://Audio/absorb03.wav" type="Sample" id=3]
+[ext_resource path="res://Audio/nextLevel01.wav" type="Sample" id=4]
+[ext_resource path="res://Audio/select01.wav" type="Sample" id=5]
+[ext_resource path="res://Audio/spark01.wav" type="Sample" id=6]
+[ext_resource path="res://Audio/spark02.wav" type="Sample" id=7]
+[ext_resource path="res://Audio/swap01.wav" type="Sample" id=8]
 
 [sub_resource type="SampleLibrary" id=1]
 
+samples/absorb01 = { "db":0.0, "pitch":1.0, "sample":ExtResource( 1 ) }
+samples/absorb02 = { "db":2.0, "pitch":1.0, "sample":ExtResource( 2 ) }
+samples/absorb03 = { "db":4.0, "pitch":1.0, "sample":ExtResource( 3 ) }
+samples/nextLevel01 = { "db":0.0, "pitch":1.0, "sample":ExtResource( 4 ) }
+samples/select01 = { "db":3.0, "pitch":1.0, "sample":ExtResource( 5 ) }
+samples/spark01 = { "db":0.0, "pitch":1.0, "sample":ExtResource( 6 ) }
+samples/spark02 = { "db":0.0, "pitch":1.0, "sample":ExtResource( 7 ) }
+samples/swap01 = { "db":4.0, "pitch":1.0, "sample":ExtResource( 8 ) }
 
 [node name="SamplePlayer" type="SamplePlayer"]
 
-config/polyphony = 1
+config/polyphony = 12
 config/samples = SubResource( 1 )
 default/volume_db = 0.0
 default/pitch_scale = 1.0
