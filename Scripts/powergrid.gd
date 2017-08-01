@@ -538,7 +538,8 @@ func generatorSpark(delta):
 			var popupHeight = popup.find_node("Label1").get_rect().size.height
 			var xPos = GRID_WIDTH / 2 * 16 - (popupWidth / 8) - 6
 			var yPos = GRID_HEIGHT / 2 * 16 - (popupHeight / 8)
-			popup.set_pos(Vector2(xPos, yPos))
+			#popup.set_pos(Vector2(xPos, yPos))
+			popup.set_pos(Vector2(332, 33))
 		get_node("/root/sound_effects").play("spark02")
 
 func diamondSpark(delta):
