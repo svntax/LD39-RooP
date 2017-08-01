@@ -78,6 +78,18 @@ func getExit2():
 func isSparkInTile():
 	return sparkInTile
 
+func showCost():
+	find_node("Cost").show()
+
+func hideCost():
+	find_node("Cost").hide()
+
+func getCost():
+	return int(find_node("Cost").get_text())
+
+func setCost(amount):
+	find_node("Cost").set_text(amount)
+
 func drainDiamond():
 	self.find_node("DrainedDiamond").show()
 	drained = true
@@ -89,3 +101,9 @@ func drainGenerator():
 #For diamond tiles, check if drained or not
 func isDrained():
 	return drained
+
+func _on_Cost_mouse_enter():
+	showCost()
+
+func _on_Cost_mouse_exit():
+	hideCost()

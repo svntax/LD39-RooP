@@ -28,6 +28,10 @@ var swapBase = null;
 var swapTarget = null;
 var swapQueue = []
 
+var overlayShown
+var prevMouseTileX
+var prevMouseTileY
+
 var energy = 4
 var selectedTile = null
 
@@ -238,6 +242,9 @@ func _ready():
 	#Set the current diamond count of the diamond bar to 0
 	diamondMeter.find_node("DiamondBar").set_val(0)
 	#print(diamondMeter.find_node("DiamondBar").get_val())
+	overlayShown = false
+	prevMouseTileX = -1
+	prevMouseTileY = -1
 	#Create 2D array for grid
 	grid = []
 	objectGrid = []
@@ -347,7 +354,6 @@ func addGenerators():
 		uniqueCounter+=1;
 
 func addDiamonds():
-	print("diamond count: ", DIAMOND_COUNT)
 	for i in range(DIAMOND_COUNT):
 		var diamondX=-1;
 		var diamondY=-1;
@@ -396,6 +402,7 @@ func selectTileAt(x, y):
 	#If no selected tile, select the clicked tile
 	if(selectedTile == null):
 		selectedTile = getTileAt(x, y)
+		selectedTile.find_node("Cost").set_text("X")
 		showOverlayAt(x, y)
 		get_node("/root/sound_effects").play("select01")
 	else:
@@ -404,32 +411,52 @@ func selectTileAt(x, y):
 		if(selectedTile == clickedTile):
 			selectedTile = null
 			get_node("/root/sound_effects").play("select01")
+			clearOverlay()
 		else:
-			beginSwap(clickedTile, selectedTile)
-			selectedTile = null
+			var swapCost = int(clickedTile.find_node("Cost").get_text())
+			if(swapCost > 0):
+				var powerBar = powerMeter.find_node("PowerBar")
+				powerBar.set_val(powerBar.get_val() - swapCost)
+				beginSwap(clickedTile, selectedTile)
+		selectedTile = null
 		clearOverlay()
 
 func clearOverlay():
+	overlayShown = false
 	for x1 in range(GRID_WIDTH):
 		for y1 in range(GRID_HEIGHT):
 			var targetTile = getTileAt(x1,y1);
 			targetTile.find_node("DistanceSprite_Black").hide();
 			targetTile.find_node("DistanceSprite_Green").hide();
 			targetTile.find_node("DistanceSprite_Blue").hide();
+			targetTile.find_node("Cost").hide()
+			targetTile.find_node("Cost").set_text("X")
 
 func showOverlayAt(x, y):
 	clearOverlay();
+	overlayShown = true
 	for x1 in range(GRID_WIDTH):
 		for y1 in range(GRID_HEIGHT):
 			var targetTile = getTileAt(x1,y1);
+			var dist = max(abs(x1-x),abs(y1-y))
 			if(x1 == x and y1 == y):
 				pass
 			elif(max(abs(x1-x),abs(y1-y))>energy):
 				targetTile.find_node("DistanceSprite_Black").show();
 			elif(int(max(abs(x1-x),abs(y1-y)))%2==0):
 				targetTile.find_node("DistanceSprite_Green").show();
+				if(targetTile.getType() <= 5):
+					#targetTile.find_node("Cost").show()
+					targetTile.find_node("Cost").set_text(str(calcCost(dist)))
 			else:
 				targetTile.find_node("DistanceSprite_Blue").show();
+				if(targetTile.getType() <= 5):
+					#targetTile.find_node("Cost").show()
+					targetTile.find_node("Cost").set_text(str(calcCost(dist)))
+
+#How the costs for swapping tiles are calculated
+func calcCost(dist):
+	return 4 * (dist - 1) + 8
 
 func _process(delta):
 	handleSwapping(delta);
@@ -438,6 +465,27 @@ func _process(delta):
 	diamondSpark(delta)
 	if(diamondMeter.find_node("DiamondBar").get_val() >= DIAMOND_COUNT):
 		self.generateNewLevel()
+	if(overlayShown):
+		handleMouseHover()
+
+func handleMouseHover():
+	var mousePos = get_viewport().get_mouse_pos()
+	var mouseTileX = floor(mousePos.x / 32)
+	var mouseTileY = floor(mousePos.y / 32)
+	#Mouse has moved to another tile
+	if(prevMouseTileX != mouseTileX or prevMouseTileY != mouseTileY):
+		#Hide the cost of the previous tile
+		if(isValidGridPos(prevMouseTileX, prevMouseTileY)):
+			var prevTile = getTileAt(prevMouseTileX, prevMouseTileY)
+			prevTile.find_node("Cost").hide()
+		#Show the cost of the tile hovered over
+		if(isValidGridPos(mouseTileX, mouseTileY)):
+			var tile = getTileAt(mouseTileX, mouseTileY)
+			#Don't show costs of out-of-reach tiles
+			#if(not tile.find_node("DistanceSprite_Black").is_visible()):
+			tile.find_node("Cost").show()
+			prevMouseTileX = mouseTileX
+			prevMouseTileY = mouseTileY
 
 func generatorSpark(delta):
 	spark_elapsed += delta;

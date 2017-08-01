@@ -7,8 +7,8 @@
 [node name="MainMenuContainer" parent="." instance=ExtResource( 1 )]
 
 margin/left = 344.0
-margin/top = 400.0
+margin/top = 450.0
 margin/right = 456.0
-margin/bottom = 480.0
+margin/bottom = 530.0
 
 
