@@ -6,7 +6,7 @@
 [ext_resource path="res://font_theme.thm" type="Theme" id=4]
 [ext_resource path="res://Sprites/selector_outline.png" type="Texture" id=5]
 [ext_resource path="res://Scripts/selector_controls.gd" type="Script" id=6]
-[ext_resource path="res://m5x7.fnt" type="BitmapFont" id=7]
+[ext_resource path="res://Scenes/help_ui.tscn" type="PackedScene" id=7]
 
 [node name="PowerGrid" type="Node2D"]
 
@@ -54,31 +54,33 @@ texture = ExtResource( 5 )
 centered = false
 script/script = ExtResource( 6 )
 
-[node name="Label" type="Label" parent="Selector"]
+[node name="HelpUI" parent="." instance=ExtResource( 7 )]
 
-visibility/visible = false
-rect/scale = Vector2( 0.5, 0.5 )
-focus/ignore_mouse = true
-focus/stop_mouse = true
-size_flags/horizontal = 2
-size_flags/vertical = 0
-margin/left = -8.0
-margin/top = -2.0
-margin/right = 61.0
-margin/bottom = 41.0
-custom_fonts/font = ExtResource( 7 )
-custom_colors/font_color = Color( 0.815686, 0.27451, 0.282353, 1 )
-text = "-X power"
-align = 1
-autowrap = true
-percent_visible = 1.0
-lines_skipped = 0
-max_lines_visible = -1
+transform/pos = Vector2( 310, 175 )
+transform/scale = Vector2( 0.5, 0.5 )
 
-[connection signal="value_changed" from="PowerMeter/PowerBar" to="PowerMeter/PowerBar/Label" method="_on_PowerBar_value_changed"]
+[node name="Sprite" parent="HelpUI"]
 
-[connection signal="value_changed" from="DiamondMeter/DiamondBar" to="DiamondMeter/DiamondBar/Label" method="_on_DiamondBar_value_changed"]
+transform/pos = Vector2( 110, -9 )
+transform/scale = Vector2( 2, 2 )
+
+[node name="Label1" parent="HelpUI"]
+
+margin/top = 50.0
+margin/right = 112.0
+margin/bottom = 68.0
+
+[node name="Sprite1" parent="HelpUI"]
+
+transform/pos = Vector2( 119, 42 )
+transform/scale = Vector2( 2, 2 )
+
+[node name="Label2" parent="HelpUI"]
+
+margin/top = 79.0
+margin/bottom = 97.0
 
 
 [editable path="PowerMeter"]
 [editable path="DiamondMeter"]
+[editable path="HelpUI"]

@@ -1,0 +1,72 @@
+[gd_scene load_steps=3 format=1]
+
+[ext_resource path="res://m5x7.fnt" type="BitmapFont" id=1]
+[ext_resource path="res://Sprites/grid_tiles.png" type="Texture" id=2]
+
+[node name="HelpUI" type="Node2D"]
+
+[node name="Label" type="Label" parent="."]
+
+focus/ignore_mouse = true
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 0
+margin/left = 0.0
+margin/top = 0.0
+margin/right = 40.0
+margin/bottom = 14.0
+custom_fonts/font = ExtResource( 1 )
+text = "Collect all"
+percent_visible = 1.0
+lines_skipped = 0
+max_lines_visible = -1
+
+[node name="Sprite" type="Sprite" parent="."]
+
+transform/pos = Vector2( 110, 0 )
+texture = ExtResource( 2 )
+centered = false
+region = true
+region_rect = Rect2( 32, 16, 16, 16 )
+
+[node name="Label1" type="Label" parent="."]
+
+focus/ignore_mouse = true
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 0
+margin/left = 0.0
+margin/top = 30.0
+margin/right = 102.0
+margin/bottom = 48.0
+custom_fonts/font = ExtResource( 1 )
+text = "Connect to"
+percent_visible = 1.0
+lines_skipped = 0
+max_lines_visible = -1
+
+[node name="Sprite1" type="Sprite" parent="."]
+
+transform/pos = Vector2( 119, 30 )
+texture = ExtResource( 2 )
+centered = false
+region = true
+region_rect = Rect2( 16, 16, 16, 16 )
+
+[node name="Label2" type="Label" parent="."]
+
+focus/ignore_mouse = true
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 0
+margin/left = 0.0
+margin/top = 50.0
+margin/right = 194.0
+margin/bottom = 68.0
+custom_fonts/font = ExtResource( 1 )
+text = "to gain power"
+percent_visible = 1.0
+lines_skipped = 0
+max_lines_visible = -1
+
+

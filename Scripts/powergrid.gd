@@ -38,7 +38,7 @@ var selectedTile = null
 var uniqueCounter = 0;
 var sparkCounts = [];
 var generatorCharges = [];
-var GENERATOR_STARTING_CHARGE_COUNT = 10;
+var GENERATOR_STARTING_CHARGE_COUNT = 12;
 
 var popupTextScene = load("res://Scenes/popup_text.tscn")
 var sparkScene = load("res://Scenes/spark.tscn")
@@ -417,6 +417,12 @@ func selectTileAt(x, y):
 			if(swapCost > 0):
 				var powerBar = powerMeter.find_node("PowerBar")
 				powerBar.set_val(powerBar.get_val() - swapCost)
+				#Flash popup
+				var popup = popupTextScene.instance()
+				popup.set_scale(Vector2(0.5, 0.5))
+				popup.setText("-" + str(swapCost) + " power!")
+				self.add_child(popup)
+				popup.set_pos(Vector2(332, 22))
 				beginSwap(clickedTile, selectedTile)
 		selectedTile = null
 		clearOverlay()
@@ -456,7 +462,7 @@ func showOverlayAt(x, y):
 
 #How the costs for swapping tiles are calculated
 func calcCost(dist):
-	return 4 * (dist - 1) + 8
+	return 4 * (dist - 1) + 6
 
 func _process(delta):
 	handleSwapping(delta);
@@ -576,7 +582,7 @@ func diamondSpark(delta):
 
 func powerDrain(delta):
 	var powerBar = powerMeter.find_node("PowerBar")
-	powerBar.set_val(powerBar.get_val()-delta*powerDrainRate);
+	powerBar.set_val(powerBar.get_val()-delta*(powerDrainRate+0.2*currentLevel));
 	if(powerBar.get_val() <= 0):
 		var gameOverMenu = get_tree().get_root().get_node("Game").find_node("GameOverMenu")
 		gameOverMenu.toggle()
